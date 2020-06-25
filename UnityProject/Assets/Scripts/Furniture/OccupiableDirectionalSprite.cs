@@ -137,7 +137,7 @@ public class OccupiableDirectionalSprite : NetworkBehaviour
 	private void SetDirectionalSprite(Orientation orientation)
 	{
 		if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
-
+		if (GetComponent<SpriteRenderer>() == null) return;
 		if (orientation == Orientation.Up) spriteRenderer.sprite = Up;
 		else if (orientation == Orientation.Down) spriteRenderer.sprite = Down;
 		else if (orientation == Orientation.Left) spriteRenderer.sprite = Left;

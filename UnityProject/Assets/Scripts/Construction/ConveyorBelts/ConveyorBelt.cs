@@ -185,6 +185,7 @@ public class ConveyorBelt : NetworkBehaviour, ICheckedInteractable<HandApply>
 
 	private void RefreshSprites()
 	{
+		if (spriteHandler == null) return;
 		spriteHandler.ChangeSprite((int) CurrentStatus);
 		var variant = (int) CurrentDirection;
 		switch (variant)

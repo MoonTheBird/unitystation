@@ -64,6 +64,8 @@ public class DirectionalSprite : NetworkBehaviour
 
 	private void OnDirectionChanged(Orientation newDir)
 	{
+		if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+		if (spriteRenderer == null) return;
 		if (newDir == Orientation.Up)
 		{
 			spriteRenderer.sprite = Up;

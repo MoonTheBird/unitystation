@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class PostProcessingStack
 {
-	private readonly MaterialContainer mMaterialContainer;
+	private MaterialContainer mMaterialContainer;
 	private RenderTexture mBlurRenderTexture;
 	private RenderTexture mBlurRenderTextureLight;
 	private RenderTexture mBlurRenderTextureOccLight;
