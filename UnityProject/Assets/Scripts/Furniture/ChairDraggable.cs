@@ -31,13 +31,8 @@ public class ChairDraggable : MonoBehaviour, ICheckedInteractable<MouseDrop>
     }
 
     public void ServerPerformInteraction(MouseDrop interaction)
-	{
-		if (MatrixManager.GetAt<PlayerMove>(gameObject.WorldPosServer().CutToInt(), gameObject.RegisterTile().isServer)
-			.Any(pm => pm.IsBuckled))
-		{
-			MatrixManager.GetAt<PlayerMove>(gameObject.WorldPosServer().CutToInt(), gameObject.RegisterTile().isServer).ForEach(pm => pm.Unbuckle());
-		}
-		var folded = Spawn.ServerPrefab(prefabVariant).GameObject;
+    {
+	    var folded = Spawn.ServerPrefab(prefabVariant).GameObject;
 	    Inventory.ServerAdd(folded,
 		    interaction.Performer.GetComponent<ItemStorage>().GetActiveHandSlot());
 	    // Remove from world

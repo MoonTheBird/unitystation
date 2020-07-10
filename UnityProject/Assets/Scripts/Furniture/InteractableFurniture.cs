@@ -22,13 +22,8 @@ public class InteractableFurniture : NetworkBehaviour, ICheckedInteractable<Hand
 
 	private void OnWillDestroyServer(DestructionInfo arg0)
 	{
-		if (MatrixManager.GetAt<PlayerMove>(gameObject.RegisterTile().WorldPosition, gameObject.RegisterTile().isServer)
-			.Any(pm => pm.IsBuckled))
-		{
-			MatrixManager.GetAt<PlayerMove>(gameObject.RegisterTile().WorldPosition, gameObject.RegisterTile().isServer).ForEach(pm => pm.Unbuckle());
-		}
 		Spawn.ServerPrefab(resourcesMadeOf, gameObject.TileWorldPosition().To3Int(), transform.parent,
-		count: Random.Range(0, howMany + 1), scatterRadius: Random.Range(0f, 2f));
+			count: Random.Range(0, howMany+1), scatterRadius: Random.Range(0f,2f));
 	}
 
 	public bool WillInteract(HandApply interaction, NetworkSide side)
@@ -59,11 +54,6 @@ public class InteractableFurniture : NetworkBehaviour, ICheckedInteractable<Hand
 	[Server]
 	private void Disassemble(HandApply interaction)
 	{
-		if (MatrixManager.GetAt<PlayerMove>(gameObject.WorldPosServer().CutToInt(), gameObject.RegisterTile().isServer)
-			.Any(pm => pm.IsBuckled))
-		{
-			MatrixManager.GetAt<PlayerMove>(gameObject.WorldPosServer().CutToInt(), gameObject.RegisterTile().isServer).ForEach(pm => pm.Unbuckle());
-		}
 		Spawn.ServerPrefab(resourcesMadeOf, gameObject.WorldPosServer() , count: howMany);
 		Despawn.ServerSingle(gameObject);
 	}
