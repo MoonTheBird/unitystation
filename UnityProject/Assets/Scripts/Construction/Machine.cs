@@ -39,7 +39,11 @@ namespace Machines
 		/// </summary>
 		public bool canNotBeDeconstructed;
 
-		[Tooltip("Time taken to screwdrive to deconstruct this.")]
+		[Tooltip("Tool used to begin deconstruction.")]
+		[SerializeField]
+		private ItemTrait deconstructTool;
+
+		[Tooltip("Time taken to begin to deconstruct this.")]
 		[SerializeField]
 		private float secondsToScrewdrive = 2f;
 
@@ -51,7 +55,9 @@ namespace Machines
 
 			if (!Validations.IsTarget(gameObject, interaction)) return false;
 
-			return Validations.HasUsedItemTrait(interaction, CommonTraits.Instance.Screwdriver);
+			if (deconstructTool == null) deconstructTool = CommonTraits.Instance.Screwdriver;
+
+			return Validations.HasUsedItemTrait(interaction, deconstructTool);
 		}
 
 		public void ServerPerformInteraction(HandApply interaction)
