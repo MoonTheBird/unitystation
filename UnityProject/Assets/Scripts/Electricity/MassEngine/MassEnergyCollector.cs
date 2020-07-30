@@ -1,5 +1,6 @@
 ﻿using Machines;
 using MassEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,6 +13,9 @@ public class MassEnergyCollector : MonoBehaviour
 	public ModuleSupplyingDevice moduleSupplyingDevice;
 
 	public MassEngineCore massCore;
+
+	[HideInInspector]
+	public double fallOffMultiplier = 0.75;
 
 	public void Start()
 	{
@@ -39,7 +43,14 @@ public class MassEnergyCollector : MonoBehaviour
 	{
 		if (massCore != null)
 		{
-			moduleSupplyingDevice.ProducingWatts = (float)massCore.OutputEnergy/8;
+			if (massCore.energyCollectorNum <= 8)
+			{
+				moduleSupplyingDevice.ProducingWatts = (((float)massCore.OutputEnergy * (float)fallOffMultiplier) / massCore.energyCollectorNum) * (massCore.energyCollectorNum / 8);
+			}
+			else if (massCore.energyCollectorNum > 8)
+			{
+				moduleSupplyingDevice.ProducingWatts = ((float)massCore.OutputEnergy * (float)fallOffMultiplier) / massCore.energyCollectorNum;
+			}
 		}
 		else
 		{
