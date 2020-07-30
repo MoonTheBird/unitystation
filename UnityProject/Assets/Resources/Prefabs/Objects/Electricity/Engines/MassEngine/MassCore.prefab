@@ -1,17 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &1869589229766477353
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6443532653710020004}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de86be65a2c87b74aa69a1c0facd0ddf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &73330909854330778
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -31,6 +19,62 @@ MonoBehaviour:
   ObjectID: 0
   DotSprite: {fileID: 0}
   SynchroniseStrength: 0
+--- !u!114 &704055353556092217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6443532653710020004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db025f3627a11af4fb670ccd1e2188ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  NetworkThis: 1
+  SubCatalogue: []
+  PresentSpriteSet: {fileID: 0}
+  variantIndex: 0
+  palette: []
+  Sprites:
+  - Texture: {fileID: 2800000, guid: d73844fc369439144a27514fcd026871, type: 3}
+  - Texture: {fileID: 2800000, guid: 9a8c9f8948674a542a347234fb5698ae, type: 3}
+  - Texture: {fileID: 2800000, guid: aa5b121b1c7105a47ac2990af84afebc, type: 3}
+  - Texture: {fileID: 2800000, guid: 7e00d3be43d2949418173e58983e5505, type: 3}
+  - Texture: {fileID: 2800000, guid: 5427083a9e144664190ffe28693ebb69, type: 3}
+  - Texture: {fileID: 2800000, guid: a6c0cecd6a4e48947b3143fd23daeb83, type: 3}
+  - Texture: {fileID: 2800000, guid: cf46872275d671d47bc3de69564275b9, type: 3}
+  - Texture: {fileID: 2800000, guid: fd6f4fd17209ea64292da6d05c58c916, type: 3}
+--- !u!114 &1869589229766477353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6443532653710020004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de86be65a2c87b74aa69a1c0facd0ddf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &4249382062452709861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3019193963262902174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db025f3627a11af4fb670ccd1e2188ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  NetworkThis: 1
+  SubCatalogue: []
+  PresentSpriteSet: {fileID: 11400000, guid: 2cd4e6ded4548ea47a2873d0cefcbe2a, type: 2}
+  variantIndex: 0
+  palette: []
+  Sprites: []
 --- !u!1001 &7146669736776633325
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -42,7 +86,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 76e58816f7f0e4dc7a05f1905bc14be7,
+      objectReference: {fileID: 21300000, guid: d73844fc369439144a27514fcd026871,
         type: 3}
     - target: {fileID: 4197940402254186057, guid: ebb08cf966efc084aa918bd8d9429604,
         type: 3}
@@ -107,17 +151,17 @@ PrefabInstance:
     - target: {fileID: 4204006106222477459, guid: ebb08cf966efc084aa918bd8d9429604,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 4
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4204006106222477459, guid: ebb08cf966efc084aa918bd8d9429604,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 4
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4204006106222477459, guid: ebb08cf966efc084aa918bd8d9429604,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 4
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5737521361753715499, guid: ebb08cf966efc084aa918bd8d9429604,
         type: 3}
@@ -154,6 +198,12 @@ PrefabInstance:
 --- !u!1 &6443532653710020004 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4197940402254186057, guid: ebb08cf966efc084aa918bd8d9429604,
+    type: 3}
+  m_PrefabInstance: {fileID: 7146669736776633325}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &3019193963262902174 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5388634654466307187, guid: ebb08cf966efc084aa918bd8d9429604,
     type: 3}
   m_PrefabInstance: {fileID: 7146669736776633325}
   m_PrefabAsset: {fileID: 0}
