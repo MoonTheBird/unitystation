@@ -13,7 +13,7 @@ namespace Atmospherics
 		public static readonly Gas Oxygen = new Gas("Oxygen", 20, 31.9988f);
 		public static readonly Gas Nitrogen = new Gas("Nitrogen", 20, 28.0134f);
 		public static readonly Gas CarbonDioxide = new Gas("Carbon Dioxide", 30, 44.01f);
-		//public static readonly Gas Tritium = new Gas("Tritium", 10, 6.032099f); does not work for some unfathomable reason
+		//public static readonly Gas Tritium = new Gas("Tritium", 10, 6.032099f); //does not work for some unfathomable reason
 
 		public readonly float MolarHeatCapacity;	//this is how many Joules are needed to raise 1 mole of the gas 1 degree Kelvin: J/K/mol
 		public readonly float MolarMass;	//this is the mass, in grams, of 1 mole of the gas
