@@ -14,18 +14,51 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectiveName: Ship Resources
   description: " <size=26>Asteroid bodies have been sighted in the local area around
-    STATIONNAME. Locate and exploit local sources for metal deposits.</size>\n \n
-    <color=blue><size=32>Crew Objectives:</size></color>\n \n <size=24>- Locate and
-    mine local metal Deposits\n \n - Fulfill order of 80 metal sheets and dispatch
-    to Central Command via Cargo Shuttle</size>\n \n <size=32>Latest Asteroid Sightings:</size>\n
-    \n"
+    STATIONNAME. Locate and exploit local sources for titanium deposits.</size>\n
+    \n <color=blue><size=32>Crew Objectives:</size></color>\n \n <size=24>- Locate
+    and mine local titanium Deposits\n \n - Fulfill order of 8 titanium sheets and
+    dispatch to Central Command via Cargo Shuttle</size>\n \n <size=32>Latest Asteroid
+    Sightings:</size>\n \n <size=24>(-299, -83)</size>  <size=24>(-218, 533)</size> 
+    <size=24>(-51, -576)</size>  <size=24>(-199, 156)</size>  <size=24>(-252, -301)</size> 
+    <size=24>(-517, 293)</size>  <size=24>(510, -79)</size>  <size=24>(470, -167)</size> 
+    <size=24>(2, 219)</size>  <size=24>(-490, -19)</size>  <size=24>(-12, -347)</size> 
+    <size=24>(-451, 100)</size>  <size=24>(397, 439)</size>  <size=24>(-151, 386)</size> 
+    <size=24>(562, 143)</size>  <size=24>(-215, 384)</size>  <size=24>(134, -195)</size> 
+    <size=24>(-341, 466)</size>  <size=24>(433, -376)</size>  <size=24>(73, -581)</size> 
+    <size=24>(395, -77)</size>  <size=24>(543, -152)</size>  <size=24>(377, -280)</size> 
+    <size=24>(83, -583)</size>  <size=24>(157, -508)</size>  <size=24>(453, 86)</size> 
+    <size=24>(379, -13)</size>  <size=24>(546, -180)</size>  <size=24>(326, 415)</size> 
+    <size=24>(300, -137)</size>  <size=24>(-125, 330)</size>  <size=24>(483, 346)</size> 
+    <size=24>(-81, -315)</size>  <size=24>(34, 502)</size>  <size=24>(268, -133)</size> 
+    <size=24>(-439, 340)</size>  <size=24>(159, 312)</size>  <size=24>(21, 144)</size> 
+    <size=24>(440, -73)</size>  <size=24>(275, -446)</size>  <size=24>(220, -207)</size> 
+    <size=24>(-403, -342)</size>  <size=24>(-506, 21)</size>  <size=24>(-218, 415)</size> 
+    <size=24>(-234, -125)</size>  <size=24>(-459, -274)</size>  <size=24>(-437, 34)</size> 
+    <size=24>(-448, 274)</size>  <size=24>(511, -310)</size>  <size=24>(-345, 440)</size> 
+    <size=24>(345, 63)</size>  <size=24>(-432, -307)</size>  <size=24>(296, -90)</size> 
+    <size=24>(-416, 228)</size>  <size=24>(-544, -80)</size>  <size=24>(577, 134)</size> 
+    <size=24>(174, 481)</size>  <size=24>(168, 65)</size>  <size=24>(209, 497)</size> 
+    <size=24>(-498, 141)</size>  <size=24>(-430, 342)</size>  <size=24>(256, 131)</size> 
+    <size=24>(419, 312)</size>  <size=24>(-333, -77)</size>  <size=24>(-199, -81)</size> 
+    <size=24>(-518, -58)</size>  <size=24>(177, 61)</size>  <size=24>(579, -107)</size> 
+    <size=24>(338, -182)</size>  <size=24>(571, -16)</size>  <size=24>(-358, 89)</size> 
+    <size=24>(-210, 0)</size>  <size=24>(493, 95)</size>  <size=24>(29, -153)</size> 
+    <size=24>(-259, 387)</size>  <size=24>(481, 173)</size>  <size=24>(355, -434)</size> 
+    <size=24>(-114, -271)</size>  <size=24>(-567, 31)</size>  <size=24>(-165, -61)</size> 
+    <size=24>(-384, -455)</size>  <size=24>(242, 84)</size>  <size=24>(-446, -151)</size> 
+    <size=24>(-94, -477)</size>  <size=24>(23, 382)</size>  <size=24>(249, -367)</size> 
+    <size=24>(131, 570)</size>  <size=24>(-523, -250)</size>  <size=24>(-206, 156)</size> 
+    <size=24>(228, 252)</size>  <size=24>(-176, -476)</size>  <size=24>(-359, -111)</size> 
+    <size=24>(-20, -125)</size>  <size=24>(-133, -515)</size>  <size=24>(108, 367)</size> 
+    <size=24>(444, -371)</size>  <size=24>(-87, 374)</size>  <size=24>(-286, -207)</size> 
+    <size=24>(-273, 391)</size>  <size=24>(259, -268)</size> "
   victoryDescription: " - Locate and mine local titanium Deposits\n \n - Fulfill
-    order of 4 titanium sheets and dispatch to Central Command via Cargo Shuttle\n
-    \n - Amount of titanium sheets shipped: 167/4"
-  ItemPool:
+    order of 8 titanium sheets and dispatch to Central Command via Cargo Shuttle\n
+    \n - Amount of titanium sheets shipped: SHIPPEDVAL/8"
+  itemPool:
     m_keys:
+    - {fileID: 5770283965274354279, guid: b83b68cfa4a201748aeeece963a989c3, type: 3}
     - {fileID: 9177804066296137559, guid: 25108e21a69d52c46a538e66eb85db0a, type: 3}
     - {fileID: 50811173315437471, guid: 25625619713dba04296304a60f5f37c1, type: 3}
     - {fileID: 5079880465429418907, guid: e85621ccf37627c47bb04b501d86fb83, type: 3}
-    - {fileID: 5770283965274354279, guid: b83b68cfa4a201748aeeece963a989c3, type: 3}
-    m_values: 14000000050000000a00000064000000
+    m_values: 640000001e0000000a00000014000000

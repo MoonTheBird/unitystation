@@ -17,7 +17,7 @@ namespace StationObjectives
 		/// The pool of possible resources to ship
 		/// </summary>
 		[SerializeField]
-		private ItemDictionary itemPool = null;
+		private ItemDictionary itemPool;
 
 		private List<Vector2> asteroidLocations = new List<Vector2>();
 		private ResourceTracker tracker;
@@ -110,6 +110,12 @@ namespace StationObjectives
 			}
 
 			tracker = new ResourceTracker(amount, itemName);
+			if (string.IsNullOrEmpty(tracker.ItemName))
+			{
+				Logger.LogError($"Objective failed because the tracker is busted." +
+								$" Should have gotten {itemName}, got null instead.", Category.Round);
+				return;
+			}
 
 			var report = new StringBuilder();
 			report.AppendFormat(ReportTemplates.DeliveryStationObjective, amount);
@@ -132,8 +138,7 @@ namespace StationObjectives
 		{
 			var item = CargoManager.Instance.GetExportedItem();
 			var attributes = item.gameObject.GetComponent<Attributes>();
-			string exportName = System.String.Empty;
-
+			string exportName;
 			if (attributes)
 			{
 				if (string.IsNullOrEmpty(attributes.InitialName))
@@ -149,8 +154,12 @@ namespace StationObjectives
 			{
 				exportName = item.gameObject.ExpensiveName();
 			}
+			Logger.Log($"Tracker has name {tracker.ItemName} stored.");
+			Logger.Log($"Sold item has {exportName} stored.");
 			if (exportName == tracker.ItemName)
 			{
+				Logger.Log($"Tracker has name {tracker.ItemName} stored.");
+				Logger.Log($"Sold item has {exportName} stored.");
 				var stackable = item.gameObject.GetComponent<Stackable>();
 				if (stackable)
 				{
@@ -160,6 +169,10 @@ namespace StationObjectives
 				{
 					tracker.AddToTracker();
 				}
+			}
+			else
+			{
+				return;
 			}
 			if (tracker.CurrentAmount >= tracker.RequiredAmount)
 			{
