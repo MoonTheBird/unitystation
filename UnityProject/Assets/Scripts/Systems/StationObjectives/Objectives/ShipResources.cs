@@ -35,6 +35,8 @@ namespace StationObjectives
 		/// </summary>
 		private int AmountSold = 0;
 
+		private List<Vector2> asteroidLocations = new List<Vector2>();
+
 		protected override bool CheckCompletion()
 		{
 			var finalReport = new StringBuilder(victoryDescription);
@@ -42,14 +44,7 @@ namespace StationObjectives
 			victoryDescription = finalReport.ToString();
 			Logger.Log($"amount sold {AmountSold}");
 			Logger.Log($"amount {Amount}");
-			if (AmountSold >= Amount)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+			return Complete;
 		}
 		private void OnEnable()
 		{
@@ -59,8 +54,45 @@ namespace StationObjectives
 		{
 			EventManager.RemoveHandler(EVENT.ItemSold, CheckItemSold);
 		}
+		public class ResourceTracker
+		{
+			public int RequiredAmount;
+			public Dictionary<string, int> CurrentAmount;
+
+			public ResourceTracker(int requiredAmount, Dictionary<string, int> currentAmounts)
+			{
+				RequiredAmount = requiredAmount;
+				CurrentAmount = currentAmounts;
+			}
+
+			public void AddToTracker(string resource)
+			{
+				if (CurrentAmount.ContainsKey(resource) == false)
+				{
+					Logger.LogWarning($"ResourceTracker tried to add to non-existent resource {resource}!");
+					return;
+				}
+
+				CurrentAmount[resource] = CurrentAmount[resource]++;
+			}
+		}
 		protected override void Setup()
 		{
+			foreach (var body in GameManager.Instance.SpaceBodies)
+			{
+				if (body.TryGetComponent<Asteroid>(out _))
+				{
+					asteroidLocations.Add(body.ServerState.Position);
+				}
+			}
+
+			int randomPosCount = Random.Range(1, 5);
+			for (int i = 0; i <= randomPosCount; i++)
+			{
+				asteroidLocations.Add(GameManager.Instance.RandomPositionInSolarSystem());
+			}
+			asteroidLocations = asteroidLocations.OrderBy(x => Random.value).ToList();
+
 			var possibleItems = ItemPool.ToList();
 
 			if (possibleItems.Count == 0)
@@ -85,16 +117,26 @@ namespace StationObjectives
 								$"Item: {itemEntry.Key.Item().gameObject.name}", Category.Round);
 				return;
 			}
-
+			// randomizes the amount needed to complete the shipment, with a minimum of 2/3rds of the default value and a maximum of 1 and 1/3rd of the default
 			Amount = Random.Range(itemEntry.Value - itemEntry.Value / 3, itemEntry.Value + itemEntry.Value / 3);
 			if (Amount <= 0)
 			{
 				Amount = 1;
 			}
+			var toTrack = new Dictionary<string, int>
+			{
+				{ItemName, 0},
+			};
+			ResourceTracker tracker = new ResourceTracker(Amount, toTrack);
 			var report = new StringBuilder();
 			report.AppendFormat(ReportTemplates.DeliveryStationObjective, Amount);
 			report.Replace("MATERIAL", ItemName);
+			foreach (var location in asteroidLocations)
+			{
+				report.AppendFormat(" <size=24>{0}</size> ", Vector2Int.RoundToInt(location));
+			}
 			description = report.ToString();
+			Complete = false;
 			AmountSold = 0;
 			var vicReport = new StringBuilder();
 			vicReport.AppendFormat(ReportTemplates.DeliveryStationObjectiveEnd, Amount);
@@ -108,7 +150,7 @@ namespace StationObjectives
 			string exportName = System.String.Empty;
 			if (attributes)
 			{
-				if (string.IsNullOrEmpty(attributes.ExportName))
+				if (string.IsNullOrEmpty(attributes.InitialName))
 				{
 					exportName = attributes.ArticleName;
 				}
@@ -127,13 +169,15 @@ namespace StationObjectives
 				if (stackable)
 				{
 					AmountSold += stackable.Amount;
-					Logger.Log(AmountSold.ToString());
 				}
 				else
 				{
 					AmountSold++;
-					Logger.Log(AmountSold.ToString() + " and not stackable");
 				}
+			}
+			if (AmountSold >= Amount)
+			{
+				Complete = true;
 			}
 		}
 	}

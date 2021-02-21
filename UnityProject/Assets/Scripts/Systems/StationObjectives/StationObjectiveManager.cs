@@ -15,7 +15,6 @@ namespace StationObjectives
 {
 	public class StationObjectiveManager : MonoBehaviour
 	{
-		public GameManager gameManager;
 
 		[SerializeField]
 		[Tooltip("Stores all station objective data.")]
@@ -24,8 +23,6 @@ namespace StationObjectives
 		public static StationObjectiveManager Instance;
 
 		[NonSerialized] public StationObjective activeObjective;
-
-		private List<Vector2> asteroidLocations = new List<Vector2>();
 
 		private void Awake()
 		{
@@ -58,31 +55,11 @@ namespace StationObjectives
 			var report = new StringBuilder(activeObjective.Description);
 			report.Replace("STATIONNAME", MatrixManager.MainStationMatrix.GameObject.scene.name);
 
-			foreach (var location in asteroidLocations)
-			{
-				report.AppendFormat(" <size=24>{0}</size> ", Vector2Int.RoundToInt(location));
-			}
-
 			return report.ToString();
 		}
 
 		public void ServerChooseObjective()
 		{
-			foreach (var body in gameManager.SpaceBodies)
-			{
-				if (body.TryGetComponent<Asteroid>(out _))
-				{
-					asteroidLocations.Add(body.ServerState.Position);
-				}
-			}
-
-			int randomPosCount = Random.Range(1, 5);
-			for (int i = 0; i <= randomPosCount; i++)
-			{
-				asteroidLocations.Add(gameManager.RandomPositionInSolarSystem());
-			}
-			asteroidLocations = asteroidLocations.OrderBy(x => Random.value).ToList();
-
 			activeObjective = stationObjectiveData.GetRandomObjective();
 			GameManager.Instance.CentComm.MakeQuietCommandReport(StationObjectiveReport());
 		}
