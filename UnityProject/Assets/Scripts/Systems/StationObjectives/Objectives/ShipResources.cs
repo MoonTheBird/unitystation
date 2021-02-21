@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System.Text;
@@ -18,34 +17,21 @@ namespace StationObjectives
 		/// The pool of possible resources to ship
 		/// </summary>
 		[SerializeField]
-		private ItemDictionary ItemPool = null;
-
-		/// <summary>
-		/// The resource to ship
-		/// </summary>
-		private string ItemName;
-
-		/// <summary>
-		/// The number of items needed to ship to complete the objective
-		/// </summary>
-		private int Amount;
-
-		/// <summary>
-		/// Current amount of the item sold.
-		/// </summary>
-		private int AmountSold = 0;
+		private ItemDictionary itemPool = null;
 
 		private List<Vector2> asteroidLocations = new List<Vector2>();
+		private ResourceTracker tracker;
 
 		protected override bool CheckCompletion()
 		{
 			var finalReport = new StringBuilder(victoryDescription);
-			finalReport.Replace("SHIPPEDVAL", $"{AmountSold}");
+			finalReport.Replace("SHIPPEDVAL", $"{tracker.CurrentAmount}");
 			victoryDescription = finalReport.ToString();
-			Logger.Log($"amount sold {AmountSold}");
-			Logger.Log($"amount {Amount}");
+			Logger.Log($"amount sold {tracker.CurrentAmount}");
+			Logger.Log($"amount {tracker.CurrentAmount}");
 			return Complete;
 		}
+
 		private void OnEnable()
 		{
 			EventManager.AddHandler(EVENT.ItemSold, CheckItemSold);
@@ -54,28 +40,26 @@ namespace StationObjectives
 		{
 			EventManager.RemoveHandler(EVENT.ItemSold, CheckItemSold);
 		}
-		public class ResourceTracker
+
+		private class ResourceTracker
 		{
 			public int RequiredAmount;
-			public Dictionary<string, int> CurrentAmount;
+			public string ItemName;
+			public int CurrentAmount;
 
-			public ResourceTracker(int requiredAmount, Dictionary<string, int> currentAmounts)
+			public ResourceTracker(int requiredAmount, string itemName)
 			{
 				RequiredAmount = requiredAmount;
-				CurrentAmount = currentAmounts;
+				ItemName = itemName;
+				CurrentAmount = 0;
 			}
 
-			public void AddToTracker(string resource)
+			public void AddToTracker(int amount = 1)
 			{
-				if (CurrentAmount.ContainsKey(resource) == false)
-				{
-					Logger.LogWarning($"ResourceTracker tried to add to non-existent resource {resource}!");
-					return;
-				}
-
-				CurrentAmount[resource] = CurrentAmount[resource]++;
+				CurrentAmount = CurrentAmount + amount;
 			}
 		}
+
 		protected override void Setup()
 		{
 			foreach (var body in GameManager.Instance.SpaceBodies)
@@ -93,7 +77,7 @@ namespace StationObjectives
 			}
 			asteroidLocations = asteroidLocations.OrderBy(x => Random.value).ToList();
 
-			var possibleItems = ItemPool.ToList();
+			var possibleItems = itemPool.ToList();
 
 			if (possibleItems.Count == 0)
 			{
@@ -104,43 +88,44 @@ namespace StationObjectives
 			if (itemEntry.Key == null)
 			{
 				Logger.LogError($"Objective failed because the item type chosen is somehow destroyed." +
-								" Definitely a programming bug. ", Category.Round);
+				                " Definitely a programming bug. ", Category.Round);
 				return;
 			}
 
-			ItemName = itemEntry.Key.Item().InitialName;
+			var itemName = itemEntry.Key.Item().InitialName;
 
-			if (string.IsNullOrEmpty(ItemName))
+			if (string.IsNullOrEmpty(itemName))
 			{
 				Logger.LogError($"Objective failed because the InitialName has not been" +
-								$" set on this objects ItemAttributes. " +
-								$"Item: {itemEntry.Key.Item().gameObject.name}", Category.Round);
+				                " set on this objects ItemAttributes. " +
+				                $"Item: {itemEntry.Key.Item().gameObject.name}", Category.Round);
 				return;
 			}
+
 			// randomizes the amount needed to complete the shipment, with a minimum of 2/3rds of the default value and a maximum of 1 and 1/3rd of the default
-			Amount = Random.Range(itemEntry.Value - itemEntry.Value / 3, itemEntry.Value + itemEntry.Value / 3);
-			if (Amount <= 0)
+			var amount = Random.Range(itemEntry.Value - itemEntry.Value / 3, itemEntry.Value + itemEntry.Value / 3);
+			if (amount <= 0)
 			{
-				Amount = 1;
+				amount = 1;
 			}
-			var toTrack = new Dictionary<string, int>
-			{
-				{ItemName, 0},
-			};
-			ResourceTracker tracker = new ResourceTracker(Amount, toTrack);
+
+			tracker = new ResourceTracker(amount, itemName);
+
 			var report = new StringBuilder();
-			report.AppendFormat(ReportTemplates.DeliveryStationObjective, Amount);
-			report.Replace("MATERIAL", ItemName);
+			report.AppendFormat(ReportTemplates.DeliveryStationObjective, amount);
+			report.Replace("MATERIAL", itemName);
+
 			foreach (var location in asteroidLocations)
 			{
 				report.AppendFormat(" <size=24>{0}</size> ", Vector2Int.RoundToInt(location));
 			}
+
 			description = report.ToString();
 			Complete = false;
-			AmountSold = 0;
+
 			var vicReport = new StringBuilder();
-			vicReport.AppendFormat(ReportTemplates.DeliveryStationObjectiveEnd, Amount);
-			vicReport.Replace("MATERIAL", ItemName);
+			vicReport.AppendFormat(ReportTemplates.DeliveryStationObjectiveEnd, amount);
+			vicReport.Replace("MATERIAL", itemName);
 			victoryDescription = vicReport.ToString();
 		}
 		private void CheckItemSold()
@@ -148,6 +133,7 @@ namespace StationObjectives
 			var item = CargoManager.Instance.GetExportedItem();
 			var attributes = item.gameObject.GetComponent<Attributes>();
 			string exportName = System.String.Empty;
+
 			if (attributes)
 			{
 				if (string.IsNullOrEmpty(attributes.InitialName))
@@ -163,19 +149,19 @@ namespace StationObjectives
 			{
 				exportName = item.gameObject.ExpensiveName();
 			}
-			if (exportName == ItemName)
+			if (exportName == tracker.ItemName)
 			{
 				var stackable = item.gameObject.GetComponent<Stackable>();
 				if (stackable)
 				{
-					AmountSold += stackable.Amount;
+					tracker.AddToTracker(stackable.Amount);
 				}
 				else
 				{
-					AmountSold++;
+					tracker.AddToTracker();
 				}
 			}
-			if (AmountSold >= Amount)
+			if (tracker.CurrentAmount >= tracker.RequiredAmount)
 			{
 				Complete = true;
 			}
