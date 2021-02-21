@@ -8,7 +8,7 @@ namespace Antagonists
 	/// <summary>
 	/// An objective to set off the nuke on the station
 	/// </summary>
-	[CreateAssetMenu(menuName="ScriptableObjects/Objectives/TriggerNuke")]
+	[CreateAssetMenu(menuName="ScriptableObjects/AntagObjectives/TriggerNuke")]
 	public class TriggerNuke : Objective
 	{
 		private Nuke NukeTarget;

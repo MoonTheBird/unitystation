@@ -40,6 +40,8 @@ namespace Systems.Cargo
 
 		private Dictionary<string, ExportedItem> exportedItems = new Dictionary<string, ExportedItem>();
 
+		private ObjectBehaviour lastItemExported;
+
 		private void Awake()
 		{
 			if (Instance == null)
@@ -311,6 +313,8 @@ namespace Systems.Cargo
 			item.registerTile.UnregisterClient();
 			item.registerTile.UnregisterServer();
 			alreadySold.Add(item.gameObject);
+			lastItemExported = item;
+			EventManager.Broadcast(EVENT.ItemSold);
 			Despawn.ServerSingle(item.gameObject);
 		}
 
@@ -416,6 +420,11 @@ namespace Systems.Cargo
 			public string ExportName;
 			public int Count;
 			public int TotalValue;
+		}
+
+		public ObjectBehaviour GetExportedItem()
+		{
+			return lastItemExported;
 		}
 	}
 

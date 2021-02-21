@@ -466,10 +466,10 @@ public partial class GameManager : MonoBehaviour, IInitialise
 			}
 
 			CurrentRoundState = RoundState.Ended;
+			GameMode.EndRound();
 			EventManager.Broadcast(EVENT.RoundEnded, true);
 			counting = false;
 
-			GameMode.EndRound();
 			StartCoroutine(WaitForRoundRestart());
 
 			if (SystemInfo.graphicsDeviceType != GraphicsDeviceType.Null && !GameData.Instance.testServer)
