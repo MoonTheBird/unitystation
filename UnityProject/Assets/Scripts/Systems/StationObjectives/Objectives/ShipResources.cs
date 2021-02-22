@@ -154,12 +154,17 @@ namespace StationObjectives
 			{
 				exportName = item.gameObject.ExpensiveName();
 			}
+
+			if (tracker == null)
+			{
+				Logger.LogError($"Error, tracker is null! How this happened is a mystery, but one that should probably be solved before I finish.");
+				return;
+			}
+
 			Logger.Log($"Tracker has name {tracker.ItemName} stored.");
 			Logger.Log($"Sold item has {exportName} stored.");
 			if (exportName == tracker.ItemName)
 			{
-				Logger.Log($"Tracker has name {tracker.ItemName} stored.");
-				Logger.Log($"Sold item has {exportName} stored.");
 				var stackable = item.gameObject.GetComponent<Stackable>();
 				if (stackable)
 				{
