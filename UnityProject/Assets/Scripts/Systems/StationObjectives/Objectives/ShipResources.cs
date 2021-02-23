@@ -24,6 +24,11 @@ namespace StationObjectives
 
 		protected override bool CheckCompletion()
 		{
+			if(tracker == null)
+			{
+				Logger.LogError($"Error, tracker is null! How this happened is a mystery, but one that should probably be solved before I finish.");
+				return Complete;
+			}
 			var finalReport = new StringBuilder(victoryDescription);
 			finalReport.Replace("SHIPPEDVAL", $"{tracker.CurrentAmount}");
 			victoryDescription = finalReport.ToString();
@@ -34,11 +39,11 @@ namespace StationObjectives
 
 		private void OnEnable()
 		{
-			EventManager.AddHandler(EVENT.ItemSold, CheckItemSold);
+			CargoManager.Instance.ObjectSold += CheckItemSold;
 		}
 		private void OnDisable()
 		{
-			EventManager.RemoveHandler(EVENT.ItemSold, CheckItemSold);
+			CargoManager.Instance.ObjectSold -= CheckItemSold;
 		}
 
 		private class ResourceTracker
@@ -134,10 +139,9 @@ namespace StationObjectives
 			vicReport.Replace("MATERIAL", itemName);
 			victoryDescription = vicReport.ToString();
 		}
-		private void CheckItemSold()
+		private void CheckItemSold(GameObject soldObject)
 		{
-			var item = CargoManager.Instance.GetExportedItem();
-			var attributes = item.gameObject.GetComponent<Attributes>();
+			var attributes = soldObject.GetComponent<Attributes>();
 			string exportName;
 			if (attributes)
 			{
@@ -152,7 +156,7 @@ namespace StationObjectives
 			}
 			else
 			{
-				exportName = item.gameObject.ExpensiveName();
+				exportName = soldObject.ExpensiveName();
 			}
 
 			if (tracker == null)
@@ -165,7 +169,7 @@ namespace StationObjectives
 			Logger.Log($"Sold item has {exportName} stored.");
 			if (exportName == tracker.ItemName)
 			{
-				var stackable = item.gameObject.GetComponent<Stackable>();
+				var stackable = soldObject.GetComponent<Stackable>();
 				if (stackable)
 				{
 					tracker.AddToTracker(stackable.Amount);
@@ -174,6 +178,7 @@ namespace StationObjectives
 				{
 					tracker.AddToTracker();
 				}
+				Logger.Log($"{ tracker.CurrentAmount}");
 			}
 			else
 			{

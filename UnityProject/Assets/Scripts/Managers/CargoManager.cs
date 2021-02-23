@@ -6,6 +6,7 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using Objects;
 using Items;
+using System;
 
 namespace Systems.Cargo
 {
@@ -41,6 +42,8 @@ namespace Systems.Cargo
 		private Dictionary<string, ExportedItem> exportedItems = new Dictionary<string, ExportedItem>();
 
 		private ObjectBehaviour lastItemExported;
+
+		public event Action<GameObject> ObjectSold;
 
 		private void Awake()
 		{
@@ -313,8 +316,7 @@ namespace Systems.Cargo
 			item.registerTile.UnregisterClient();
 			item.registerTile.UnregisterServer();
 			alreadySold.Add(item.gameObject);
-			lastItemExported = item;
-			EventManager.Broadcast(EVENT.ItemSold);
+			ObjectSold?.Invoke(item.gameObject);
 			Despawn.ServerSingle(item.gameObject);
 		}
 
