@@ -10,8 +10,36 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9d1de2691495b304e9843ac3335b626d, type: 3}
-  m_Name: SpriteData
+  m_Name: grillon
   m_EditorClassIdentifier: 
-  Variance: []
+  Variance:
+  - Frames:
+    - sprite: {fileID: -7554906233823110620, guid: c65ec92fe202229418afd8de316714bf,
+        type: 3}
+      secondDelay: 0.1
+    - sprite: {fileID: 5189049385001276518, guid: c65ec92fe202229418afd8de316714bf,
+        type: 3}
+      secondDelay: 0.1
+    - sprite: {fileID: 2767078660495439588, guid: c65ec92fe202229418afd8de316714bf,
+        type: 3}
+      secondDelay: 0.1
+    - sprite: {fileID: 5278530309131155696, guid: c65ec92fe202229418afd8de316714bf,
+        type: 3}
+      secondDelay: 0.1
+    - sprite: {fileID: -251853035231702127, guid: c65ec92fe202229418afd8de316714bf,
+        type: 3}
+      secondDelay: 0.1
+    - sprite: {fileID: -8827624376918485769, guid: c65ec92fe202229418afd8de316714bf,
+        type: 3}
+      secondDelay: 0.1
+    - sprite: {fileID: 2062266531854738233, guid: c65ec92fe202229418afd8de316714bf,
+        type: 3}
+      secondDelay: 0.1
+    - sprite: {fileID: 2944640500588076386, guid: c65ec92fe202229418afd8de316714bf,
+        type: 3}
+      secondDelay: 0.1
+    - sprite: {fileID: 8027132196732141833, guid: c65ec92fe202229418afd8de316714bf,
+        type: 3}
+      secondDelay: 0.1
   IsPalette: 0
   setID: 23013
