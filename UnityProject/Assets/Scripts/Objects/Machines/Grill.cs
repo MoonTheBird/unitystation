@@ -44,6 +44,12 @@ namespace Objects.Kitchen
 
 		public GrillState currentState;
 
+		private ItemStorage storage;
+		[NonSerialized]
+		public ItemSlot storageSlot;
+		private Cookable storedCookable;
+		public bool HasContents => storageSlot.IsOccupied;
+
 		public bool IsOperating => currentState is GrillClosedOn || currentState is GrillOpenOn;
 		public bool IsClosed => currentState is GrillClosedIdle || currentState is GrillClosedOn;
 		[SyncVar(hook = nameof(SyncStatus))]
