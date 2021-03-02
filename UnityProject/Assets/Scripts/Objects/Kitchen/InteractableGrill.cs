@@ -4,11 +4,12 @@ using System.Collections;
 namespace Objects.Kitchen
 {
 	/// <summary>
-	/// Allows Microwave to be interacted with. Player can put food in the microwave to cook it.
-	/// The microwave can be interacted with to, for example, check the remaining time.
+	/// Allows Grill to be interacted with. Player can put food on the grill to cook it.
+	/// The grill can be interacted with to check its current state.
 	/// </summary>
 	[RequireComponent(typeof(Grill))]
-	public class InteractableGrill : RegisterObject, IExaminable
+	public class InteractableGrill : RegisterObject, IExaminable, ICheckedInteractable<PositionalHandApply>,
+			IRightClickable, ICheckedInteractable<ContextMenuApply>
 	{
 
 		[SerializeField]
@@ -26,8 +27,6 @@ namespace Objects.Kitchen
 			base.Awake();
 			grill = GetComponent<Grill>();
 			OnParentChangeComplete.AddListener(ReparentContainedObjectsOnParentChangeComplete);
-			grill.OnClosedChanged.AddListener(OnClosedChanged);
-			OnClosedChanged(grill.IsClosed);
 		}
 		private void ReparentContainedObjectsOnParentChangeComplete()
 		{
@@ -37,24 +36,66 @@ namespace Objects.Kitchen
 				grill.OnParentChangeComplete(NetworkedMatrixNetId);
 			}
 		}
-		private void OnClosedChanged(bool isClosed)
-		{
-			//become passable to bullets and people when open
-			Passable = !isClosed;
-			//switching to item layer if open so bullets pass through it
-			if (Passable)
-			{
-				gameObject.layer = LayerMask.NameToLayer("Items");
-			}
-			else
-			{
-				gameObject.layer = LayerMask.NameToLayer("Machines");
-			}
-		}
 
 		public string Examine(Vector3 worldPos = default)
 		{
 			return $"The grill is currently {grill.currentState.StateMsgForExamine}.";
+		}
+		public bool WillInteract(PositionalHandApply interaction, NetworkSide side)
+		{
+			return DefaultWillInteract.Default(interaction, side);
+		}
+		public bool WillInteract(ContextMenuApply interaction, NetworkSide side)
+		{
+			return DefaultWillInteract.Default(interaction, side);
+		}
+		public void ServerPerformInteraction(PositionalHandApply interaction)
+		{
+			if (doorRegion.Contains(interaction.WorldPositionTarget))
+			{
+				grill.RequestDoorInteraction(interaction.HandSlot);
+				if (!grill.IsClosed)
+				{
+					Vector3 targetPosition = interaction.TargetObject.WorldPosServer().RoundToInt();
+					Vector3 performerPosition = interaction.Performer.WorldPosServer();
+					Inventory.ServerDrop(interaction.HandSlot, targetPosition - performerPosition);
+				}
+			}
+			else if (powerRegion.Contains(interaction.WorldPositionTarget))
+			{
+				grill.RequestToggleActive();
+			}
+		}
+		public void ServerPerformInteraction(ContextMenuApply interaction)
+		{
+			switch (interaction.RequestedOption)
+			{
+				case "ToggleActive":
+					grill.RequestToggleActive();
+					break;
+				case "ToggleDoor":
+					grill.RequestDoorInteraction();
+					break;
+			}
+		}
+
+
+		public RightClickableResult GenerateRightClickOptions()
+		{
+			var result = RightClickableResult.Create();
+			var activateInteraction = ContextMenuApply.ByLocalPlayer(gameObject, "ToggleActive");
+			if (!WillInteract(activateInteraction, NetworkSide.Client)) return result;
+			result.AddElement("Turn On or Off", () => ContextMenuOptionClicked(activateInteraction));
+
+			var ejectInteraction = ContextMenuApply.ByLocalPlayer(gameObject, "ToggleDoor");
+			result.AddElement("Open/Close", () => ContextMenuOptionClicked(ejectInteraction));
+
+			return result;
+		}
+
+		private void ContextMenuOptionClicked(ContextMenuApply interaction)
+		{
+			InteractionUtils.RequestInteract(interaction, this);
 		}
 	}
 }

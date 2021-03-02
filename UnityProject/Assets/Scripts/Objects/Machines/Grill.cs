@@ -15,11 +15,12 @@ namespace Objects.Kitchen
 	/// Otherwise, any food item that doesn't have the cookable component will be cooked using
 	/// the legacy way, of converting to cooked when the grill's timer finishes.
 	/// </summary>
-	public class Grill : NetworkBehaviour, ICheckedInteractable<HandApply>, IRightClickable,
-	IServerLifecycle
+	public class Grill : NetworkBehaviour, IServerLifecycle
 	{
 		[SerializeField]
-		private AddressableAudioSource doorSFX = null; // SFX the grill should make when opening/closing.
+		private AddressableAudioSource doorOpenSFX = null; // SFX the grill should make when opening.
+		[SerializeField]
+		private AddressableAudioSource doorCloseSFX = null; // SFX the grill should make when closing.
 
 		[SerializeField] private AddressableAudioSource startSFX = null;
 
@@ -33,16 +34,12 @@ namespace Objects.Kitchen
 
 		private RegisterTile registerTile;
 		private SpriteHandler spriteHandler;
-		private ItemStorage storage;
-		[NonSerialized]
-		public ItemSlot storageSlot;
 		private Cookable storedCookable;
 
 		[SyncVar(hook = nameof(OnSyncPlayAudioLoop))]
 		private bool playAudioLoop;
 
 		public bool IsOperating => currentState is GrillClosedOn || currentState is GrillOpenOn;
-		public bool HasContents => storageSlot.IsOccupied;
 		public bool IsClosed => currentState is GrillClosedIdle || currentState is GrillClosedOn;
 		[NonSerialized]
 		public readonly BoolEvent OnClosedChanged = new BoolEvent();
@@ -69,13 +66,12 @@ namespace Objects.Kitchen
 		{
 			registerTile = GetComponent<RegisterTile>();
 			spriteHandler = GetComponentInChildren<SpriteHandler>();
-			storage = GetComponent<ItemStorage>();
+
+			SetState(new GrillOpenIdle(this));
 			if (registerTile != null) return;
 
 			registerTile = GetComponent<RegisterCloset>();
 			pushPull = GetComponent<PushPull>();
-
-			SetState(new GrillClosedIdle(this));
 		}
 		private PushPull PushPull
 		{
@@ -94,10 +90,6 @@ namespace Objects.Kitchen
 			{
 				objectBehaviour.registerTile.ServerSetNetworkedMatrixNetID(parentNetId);
 			}
-		}
-		private void Start()
-		{
-			storageSlot = storage.GetIndexedItemSlot(0);
 		}
 
 		private void OnDisable()
@@ -132,13 +124,17 @@ namespace Objects.Kitchen
 			{
 				OnClosedChanged.Invoke(true);
 			}
-			UpdateSpritesOnStatusChange();
+			UpdateSpritesAndStateOnStatusChange();
 		}
-		protected virtual void UpdateSpritesOnStatusChange()
+		protected virtual void UpdateSpritesAndStateOnStatusChange()
 		{
 			if (statusSync == GrillStatus.Open)
 			{
 				spriteHandler.ChangeSprite((int)GrillStatus.Open);
+			}
+			else if (statusSync == GrillStatus.OpenOn)
+			{
+				spriteHandler.ChangeSprite((int)GrillStatus.OpenOn);
 			}
 			else
 			{
@@ -179,6 +175,15 @@ namespace Objects.Kitchen
 			toAdd.VisibleState = false;
 		}
 
+		[Server]
+		private void ServerRemoveInternalItemInternal(ObjectBehaviour toRemove, bool force = false)
+		{
+			if (toRemove == null || !serverHeldItems.Contains(toRemove) || (IsClosed && force)) return;
+			serverHeldItems.Remove(toRemove);
+			toRemove.parentContainer = null;
+			toRemove.VisibleState = true;
+		}
+
 		#endregion Requests
 
 		public void OnDespawnServer(DespawnInfo info)
@@ -206,31 +211,57 @@ namespace Objects.Kitchen
 
 		private void CheckCooked()
 		{
-			foreach (var slot in storage.GetItemSlots())
+			if (IsOperating)
 			{
-				if (slot.IsOccupied == true)
+				Logger.Log("Trying to cook...", Category.Tests);
+				if (IsClosed)
 				{
-
-					if (slot.ItemObject.TryGetComponent(out Cookable slotCooked))
+					foreach (var item in serverHeldItems)
 					{
-
-						// True if the item's total cooking time exceeds the item's minimum cooking time.
-						if (slotCooked.AddCookingTime(Time.deltaTime) == true)
+						if (item.gameObject.TryGetComponent(out Cookable slotCooked))
 						{
-							// Swap item for its cooked version, if applicable.
-							if (slotCooked.CookedProduct == null) return;
+							Logger.Log("Cooking!", Category.Tests);
+							// True if the item's total cooking time exceeds the item's minimum cooking time.
+							if (slotCooked.AddCookingTime(Time.deltaTime) == true)
+							{
+								// Swap item for its cooked version, if applicable.
+								if (slotCooked.CookedProduct == null) return;
 
-							Despawn.ServerSingle(slotCooked.gameObject);
-							GameObject cookedItem = Spawn.ServerPrefab(slotCooked.CookedProduct).GameObject;
-							Inventory.ServerAdd(cookedItem, slot);
+								Despawn.ServerSingle(slotCooked.gameObject);
+								GameObject cookedItem = Spawn.ServerPrefab(slotCooked.CookedProduct).GameObject;
+								ServerAddInternalItem(cookedItem.GetComponent<ObjectBehaviour>());
+								ServerRemoveInternalItem(slotCooked.gameObject.GetComponent<ObjectBehaviour>());
+							}
 						}
-
 					}
-
 				}
+				else if (!IsClosed)
+				{
+					var itemsOnCloset = Matrix.Get<ObjectBehaviour>(registerTile.LocalPositionServer, ObjectType.Item, true)
+						.Where(ob => ob != null && ob.gameObject != gameObject)
+						.Where(ob =>
+						{
+							return true;
+						});
+					foreach (var onCloset in itemsOnCloset)
+					{
+						if (onCloset.gameObject.TryGetComponent(out Cookable slotCooked))
+						{
+							Logger.Log("Cooking!", Category.Tests);
+							// True if the item's total cooking time exceeds the item's minimum cooking time.
+							if (slotCooked.AddCookingTime(Time.deltaTime) == true)
+							{
+								// Swap item for its cooked version, if applicable.
+								if (slotCooked.CookedProduct == null) return;
 
+								Despawn.ServerSingle(slotCooked.gameObject);
+								GameObject cookedItem = Spawn.ServerPrefab(slotCooked.CookedProduct).GameObject;
+							}
+						}
+					}
+				}
 			}
-
+			Logger.Log("Not on, not cooking.", Category.Tests);
 		}
 
 		private void OnSyncPlayAudioLoop(bool oldState, bool newState)
@@ -258,6 +289,11 @@ namespace Objects.Kitchen
 		{
 			ServerAddInternalItemInternal(toAdd);
 		}
+		[Server]
+		public void ServerRemoveInternalItem(ObjectBehaviour toRemove)
+		{
+			ServerRemoveInternalItemInternal(toRemove);
+		}
 		private void OnWillDestroyServer(DestructionInfo arg0)
 		{
 			// failsafe: drop all contents immediately
@@ -269,7 +305,7 @@ namespace Objects.Kitchen
 		{
 			AudioSourceParameters audioSourceParameters = new AudioSourceParameters(pitch: 1f);
 
-			SoundManager.PlayNetworkedAtPos(doorSFX, registerTile.WorldPositionServer, audioSourceParameters, sourceObj: gameObject);
+			SoundManager.PlayNetworkedAtPos(IsClosed ? doorOpenSFX : doorCloseSFX, registerTile.WorldPositionServer, audioSourceParameters, sourceObj: gameObject);
 
 			ServerSetIsClosed(nowClosed.GetValueOrDefault(!IsClosed));
 		}
@@ -372,6 +408,7 @@ namespace Objects.Kitchen
 
 			public override void DoorInteraction(ItemSlot fromSlot)
 			{
+				grill.ServerToggleClosed();
 				grill.SetState(new GrillOpenIdle(grill));
 			}
 		}
@@ -396,8 +433,9 @@ namespace Objects.Kitchen
 			public override void DoorInteraction(ItemSlot fromSlot)
 			{
 				// Close if nothing's in hand.
-				if (fromSlot.Item == null)
+				if (fromSlot == null ||  fromSlot.Item == null)
 				{
+					grill.ServerToggleClosed();
 					grill.SetState(new GrillClosedIdle(grill));
 					return;
 				}
@@ -424,8 +462,9 @@ namespace Objects.Kitchen
 			public override void DoorInteraction(ItemSlot fromSlot)
 			{
 				// Close if nothing's in hand.
-				if (fromSlot.Item == null)
+				if (fromSlot == null || fromSlot.Item == null)
 				{
+					grill.ServerToggleClosed();
 					grill.SetState(new GrillClosedOn(grill));
 					return;
 				}
@@ -441,7 +480,7 @@ namespace Objects.Kitchen
 				this.grill = grill;
 				StateMsgForExamine = "running and closed";
 				grill.GrillGlow.SetActive(false);
-				grill.spriteHandler.ChangeSprite(2);
+				grill.spriteHandler.ChangeSprite(0);
 			}
 
 			public override void ToggleActive()
@@ -451,60 +490,17 @@ namespace Objects.Kitchen
 
 			public override void DoorInteraction(ItemSlot fromSlot)
 			{
+				grill.ServerToggleClosed();
 				grill.SetState(new GrillOpenOn(grill));
 			}
 		}
 
 		#endregion GrillStates
-		#region Interaction-ContextMenu
-		public RightClickableResult GenerateRightClickOptions()
-		{
-			var result = RightClickableResult.Create();
-
-			if (WillInteract(HandApply.ByLocalPlayer(gameObject), NetworkSide.Client))
-			{
-				var optionName = IsClosed ? "Open" : "Close";
-				result.AddElement("Toggle Door", RightClickInteract, nameOverride: optionName);
-				optionName = IsOperating ? "On" : "Off";
-				result.AddElement("Toggle Power", RightClickInteract, nameOverride: optionName);
-			}
-
-			return result;
-		}
-		private void RightClickInteract()
-		{
-			InteractionUtils.RequestInteract(HandApply.ByLocalPlayer(gameObject), this);
-		}
-		#endregion Interaction-ContextMenu
-		public bool WillInteract(HandApply interaction, NetworkSide side)
-		{
-			if (!DefaultWillInteract.Default(interaction, side)) return false;
-
-			//only allow interactions targeting this closet
-			if (interaction.TargetObject != gameObject) return false;
-
-			return true;
-		}
-		public void ServerPerformInteraction(HandApply interaction)
-		{
-			if (interaction.HandObject != null)
-			{
-				if (!IsClosed)
-				{
-					Vector3 targetPosition = interaction.TargetObject.WorldPosServer().RoundToInt();
-					Vector3 performerPosition = interaction.Performer.WorldPosServer();
-					Inventory.ServerDrop(interaction.HandSlot, targetPosition - performerPosition);
-				}
-			}
-			else if (interaction.HandObject == null)
-			{
-				ServerToggleClosed();
-			}
-		}
 	}
 	public enum GrillStatus
 	{
 		Closed,
-		Open
+		Open,
+		OpenOn
 	}
 }
