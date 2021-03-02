@@ -10,10 +10,7 @@ using System.Linq;
 namespace Objects.Kitchen
 {
 	/// <summary>
-	/// A machine into which players can insert items for cooking. If the item has the Cookable component,
-	/// the item will be cooked once enough time has lapsed as determined in that component.
-	/// Otherwise, any food item that doesn't have the cookable component will be cooked using
-	/// the legacy way, of converting to cooked when the grill's timer finishes.
+	/// A machine into which players can insert meat items for grilling.
 	/// </summary>
 	public class Grill : NetworkBehaviour, IServerLifecycle
 	{
