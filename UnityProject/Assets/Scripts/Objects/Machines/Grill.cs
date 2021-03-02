@@ -31,7 +31,6 @@ namespace Objects.Kitchen
 
 		private RegisterTile registerTile;
 		private SpriteHandler spriteHandler;
-		private Cookable storedCookable;
 
 		[SyncVar(hook = nameof(OnSyncPlayAudioLoop))]
 		private bool playAudioLoop;
