@@ -31,6 +31,21 @@ MonoBehaviour:
   initialAmount: 3
   maxAmount: 6
   stacksWith: []
+--- !u!114 &-1741260957977876472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7537345380150340854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85f61ef9334eff448b907d2bf379cb03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CookTime: 10
+  CookedProduct: {fileID: 2372073881477448940, guid: 904f665a3c5c7b14ba67257823e9db48,
+    type: 3}
 --- !u!114 &2762357644075121810
 MonoBehaviour:
   m_ObjectHideFlags: 0

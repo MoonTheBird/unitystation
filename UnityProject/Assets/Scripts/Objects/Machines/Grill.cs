@@ -123,7 +123,7 @@ namespace Objects.Kitchen
 				});
 			foreach (var onGrill in itemsOnGrill)
 			{
-				if (onGrill.gameObject.TryGetComponent(out Cookable slotCooked) && onGrill.gameObject.GetComponent<Edible>() != null)
+				if (onGrill.gameObject.TryGetComponent(out Cookable slotCooked) && onGrill.gameObject.GetComponent<Edible>() != null && slotCooked.CookedProduct != null)
 				{
 					// True if the item's total cooking time exceeds the item's minimum cooking time.
 					if (slotCooked.AddCookingTime(Time.deltaTime) == true)
@@ -138,11 +138,53 @@ namespace Objects.Kitchen
 						continue;
 					}
 				}
-				else if (onGrill.gameObject.TryGetComponent(out Edible edible))
+				else if (onGrill.gameObject.TryGetComponent(out Edible edible) || (edible && slotCooked.CookedProduct == null))
 				{
 					var item = edible.gameObject.Item();
-					//CookEdible(item);
-					continue;
+					//prevents the grill from regrilling already grilled things
+					if (item.ArticleName.StartsWith("grilled"))
+					{
+						continue;
+					}
+					Cookable cookable;
+					// temporarily gives the item the "cookable" component, allowing it to be properly cooked
+					if (item.gameObject.GetComponent<Cookable>() != null)
+					{
+						cookable = item.gameObject.GetComponent<Cookable>();
+					}
+					else
+					{
+						cookable = item.gameObject.AddComponent<Cookable>();
+					}
+
+					if (cookable.AddCookingTime(Time.deltaTime) == true)
+					{
+						Destroy(cookable);
+						if (item.InitialName == "cheese wheel" || item.InitialName == "cheese wedge")
+						{
+							item.ServerSetArticleName("grilled cheese");
+							item.ServerSetArticleDescription("The name mocks you, for it lacks bread. Still looks delicious though.");
+							edible.NutritionLevel = edible.NutritionLevel * 2;
+							if (item.gameObject.GetComponentInChildren<SpriteHandler>() == null)
+							{
+								continue;
+							}
+							item.gameObject.GetComponentInChildren<SpriteHandler>().SetColor(new Color(0.3F, 0.2F, 0, 1));
+							item.gameObject.GetComponent<Edible>().eatSound = new AddressableAudioSource("Assets/Prefabs/Effects/EatFood.prefab");
+							continue;
+						}
+						edible.NutritionLevel = (int)Math.Round(edible.NutritionLevel * 1.5);
+						item.ServerSetArticleName("grilled " + item.InitialName);
+						item.ServerSetArticleDescription(item.InitialDescription + "\nIt's not something you'd normally eat grilled, but it does look tasty...");
+						edible.leavings = null;
+						if (item.gameObject.GetComponentInChildren<SpriteHandler>() == null)
+						{
+							continue;
+						}
+						item.gameObject.GetComponentInChildren<SpriteHandler>().SetColor(new Color(0.3F, 0.2F, 0, 1));
+						item.gameObject.GetComponent<Edible>().eatSound = new AddressableAudioSource("Assets/Prefabs/Effects/EatFood.prefab");
+						continue;
+					}
 				}
 				else
 				{
@@ -157,19 +199,20 @@ namespace Objects.Kitchen
 					{
 						cookable = item.gameObject.AddComponent<Cookable>();
 					}
-					if(cookable.AddCookingTime(Time.deltaTime) == true)
+					if (cookable.AddCookingTime(Time.deltaTime) == true)
 					{
+						Destroy(cookable);
 						item.ServerSetArticleName("grilled " + item.InitialName);
 						item.ServerSetArticleDescription(item.InitialDescription + "\nIt's been grilled, for some reason. Probably tastes nasty.");
-						item.gameObject.AddComponent<Edible>().NutritionLevel = 25;
-						item.gameObject.GetComponent<Edible>().NutritionLevel = 25;
 						if (item.gameObject.GetComponentInChildren<SpriteHandler>() == null)
 						{
-							Destroy(cookable);
 							continue;
 						}
 						item.gameObject.GetComponentInChildren<SpriteHandler>().SetColor(new Color(0.3F, 0.2F, 0, 1));
-						Destroy(cookable);
+						item.gameObject.AddComponent<Edible>().NutritionLevel = 25;
+						item.gameObject.GetComponent<Edible>().NutritionLevel = 25;
+						//makes food make the cronch sound
+						item.gameObject.GetComponent<Edible>().eatSound = new AddressableAudioSource("Assets/Prefabs/Effects/EatFood.prefab");
 						continue;
 					}
 				}
