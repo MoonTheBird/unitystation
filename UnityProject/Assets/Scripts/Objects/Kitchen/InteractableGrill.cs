@@ -54,12 +54,6 @@ namespace Objects.Kitchen
 			if (doorRegion.Contains(interaction.WorldPositionTarget))
 			{
 				grill.RequestDoorInteraction(interaction.HandSlot);
-				if (!grill.IsClosed)
-				{
-					Vector3 targetPosition = interaction.TargetObject.WorldPosServer().RoundToInt();
-					Vector3 performerPosition = interaction.Performer.WorldPosServer();
-					Inventory.ServerDrop(interaction.HandSlot, targetPosition - performerPosition);
-				}
 			}
 			else if (powerRegion.Contains(interaction.WorldPositionTarget))
 			{
