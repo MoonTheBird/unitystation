@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System;
+using Chemistry.Components;
 
 namespace Objects.Kitchen
 {
@@ -10,6 +11,10 @@ namespace Objects.Kitchen
 	[RequireComponent(typeof(Grill))]
 	public class InteractableGrill : MonoBehaviour, IExaminable, IRightClickable, ICheckedInteractable<ContextMenuApply>, ICheckedInteractable<HandApply>
 	{
+		[SerializeField]
+		private ItemTrait coalTrait;
+		[SerializeField]
+		private ItemTrait woodTrait;
 		private Grill grill;
 
 		protected void Awake()
@@ -38,6 +43,38 @@ namespace Objects.Kitchen
 				grill.RequestToggleActive();
 			}
 			else if (Validations.HasUsedItemTrait(interaction, CommonTraits.Instance.Wrench))
+			{
+
+			}
+			else if (Validations.HasUsedItemTrait(interaction, coalTrait))
+			{
+				var stack = interaction.HandObject.GetComponent<Stackable>();
+				if (stack)
+				{
+					grill.AddGrillFuel(500 * stack.Amount);
+					Inventory.ServerConsume(interaction.HandSlot, stack.Amount);
+				}
+				else
+				{
+					grill.AddGrillFuel(500);
+					Inventory.ServerDespawn(interaction.HandSlot);
+				}
+			}
+			else if (Validations.HasUsedItemTrait(interaction, woodTrait))
+			{
+				var stack = interaction.HandObject.GetComponent<Stackable>();
+				if (stack)
+				{
+					grill.AddGrillFuel(50 * stack.Amount);
+					Inventory.ServerConsume(interaction.HandSlot, stack.Amount);
+				}
+				else
+				{
+					grill.AddGrillFuel(50);
+					Inventory.ServerDespawn(interaction.HandSlot);
+				}
+			}
+			else if (Validations.HasComponent<ReagentContainer>(interaction.UsedObject))
 			{
 
 			}

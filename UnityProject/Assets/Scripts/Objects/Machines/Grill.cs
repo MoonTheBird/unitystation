@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using SoundMessages;
 using System.Linq;
 using Items;
+using Chemistry.Components;
 
 namespace Objects.Kitchen
 {
@@ -14,7 +15,8 @@ namespace Objects.Kitchen
 	/// A machine into which players can insert meat items for grilling.
 	/// </summary>
 	public class Grill : NetworkBehaviour
-	{[SerializeField] private AddressableAudioSource startSFX = null;
+	{
+		[SerializeField] private AddressableAudioSource startSFX = null;
 
 		[SerializeField]
 		[Tooltip("The looped audio source to play while the grill is open and on.")]
@@ -27,6 +29,12 @@ namespace Objects.Kitchen
 		private RegisterTile registerTile;
 		private SpriteHandler spriteHandler;
 
+		private const float FUEL_USE_IDLE = 0.5F;
+		private const float FUEL_USE_ACTIVE = 5F;
+
+		private float currentFuel = 0;
+		public float CurrentFuel => currentFuel;
+
 		[SyncVar(hook = nameof(OnSyncPlayAudioLoop))]
 		private bool playAudioLoop;
 		public Vector3Int WorldPosition => registerTile.WorldPosition;
@@ -35,7 +43,11 @@ namespace Objects.Kitchen
 
 		public GrillState currentState;
 
+		private ReagentContainer reagentContainer;
+
 		public bool IsOperating => currentState is GrillOpenOn;
+
+		public bool HasFuel => currentFuel > 0;
 
 
 		#region Lifecycle
@@ -49,8 +61,9 @@ namespace Objects.Kitchen
 		{
 			registerTile = GetComponent<RegisterTile>();
 			spriteHandler = GetComponentInChildren<SpriteHandler>();
+			reagentContainer = GetComponent<ReagentContainer>();
 
-			SetState(new GrillOpenIdle(this));
+			SetState(new GrillOpenOff(this));
 			if (registerTile != null) return;
 		}
 
@@ -60,9 +73,25 @@ namespace Objects.Kitchen
 		}
 
 		#endregion Lifecycle
+		/// <summary>
+		/// can't grill in this state, but slowly consume fuel
+		/// </summary>
+		private void IdleUpdate()
+		{
+			if (IsOperating)
+			{
+				return;
+			}
+			if(!HasFuel)
+			{
+				return;
+			}
+			ConsumeReagentFuel();
+			currentFuel -= FUEL_USE_IDLE;
+		}
 
 		/// <summary>
-		/// grill
+		/// grill and consume fuel
 		/// </summary>
 		private void UpdateMe()
 		{
@@ -70,7 +99,28 @@ namespace Objects.Kitchen
 			{
 				return;
 			}
+			if (!HasFuel)
+			{
+				SetState(new GrillOpenOff(this));
+				return;
+			}
+			ConsumeReagentFuel();
+			currentFuel -= FUEL_USE_ACTIVE;
 			CheckCooked();
+		}
+
+		public void ConsumeReagentFuel()
+		{
+			if (!reagentContainer.IsEmpty)
+			{
+				AddGrillFuel(reagentContainer.ReagentMixTotal * 20);
+				reagentContainer.Subtract(reagentContainer.CurrentReagentMix);
+			}
+		}
+
+		public void AddGrillFuel(float toAdd)
+		{
+			currentFuel += toAdd;
 		}
 
 		private void SetState(GrillState newState)
@@ -89,8 +139,7 @@ namespace Objects.Kitchen
 		}
 
 		/// <summary>
-		/// Opens or closes the grill's door, depending on the grill's current state.
-		/// If closing, will attempt to add the currently held item to the grill.
+		/// adds an item to the grill's surface
 		/// </summary>
 		/// <param name="fromSlot">The slot with which to check if an item is held, for inserting an item when closing.</param>
 		public void RequestDoorInteraction(ItemSlot fromSlot = null)
@@ -103,6 +152,7 @@ namespace Objects.Kitchen
 		private void GrillOn()
 		{
 			UpdateManager.Add(CallbackType.UPDATE, UpdateMe);
+			UpdateManager.Remove(CallbackType.UPDATE, IdleUpdate);
 			SoundManager.PlayNetworkedAtPos(startSFX, WorldPosition, sourceObj: gameObject);
 			playAudioLoop = true;
 		}
@@ -110,6 +160,7 @@ namespace Objects.Kitchen
 		private void GrillOff()
 		{
 			UpdateManager.Remove(CallbackType.UPDATE, UpdateMe);
+			UpdateManager.Add(CallbackType.UPDATE, IdleUpdate);
 			playAudioLoop = false;
 		}
 
@@ -289,9 +340,9 @@ namespace Objects.Kitchen
 			public abstract void DoorInteraction(ItemSlot fromSlot);
 		}
 
-		private class GrillOpenIdle : GrillState
+		private class GrillOpenOff : GrillState
 		{
-			public GrillOpenIdle(Grill grill)
+			public GrillOpenOff(Grill grill)
 			{
 				this.grill = grill;
 				StateMsgForExamine = "open and off";
@@ -326,7 +377,7 @@ namespace Objects.Kitchen
 
 			public override void ToggleActive()
 			{
-				grill.SetState(new GrillOpenIdle(grill));
+				grill.SetState(new GrillOpenOff(grill));
 			}
 
 			public override void DoorInteraction(ItemSlot fromSlot)
