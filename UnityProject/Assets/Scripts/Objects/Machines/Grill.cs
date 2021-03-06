@@ -35,8 +35,6 @@ namespace Objects.Kitchen
 		private float currentFuel = 0;
 		public float CurrentFuel => currentFuel;
 
-		[SyncVar(hook = nameof(OnSyncPlayAudioLoop))]
-		private bool playAudioLoop;
 		public Vector3Int WorldPosition => registerTile.WorldPosition;
 		private PushPull pushPull;
 		private Matrix Matrix => registerTile.Matrix;
@@ -154,14 +152,13 @@ namespace Objects.Kitchen
 			UpdateManager.Add(CallbackType.UPDATE, UpdateMe);
 			UpdateManager.Remove(CallbackType.UPDATE, IdleUpdate);
 			SoundManager.PlayNetworkedAtPos(startSFX, WorldPosition, sourceObj: gameObject);
-			playAudioLoop = true;
 		}
 
 		private void GrillOff()
 		{
 			UpdateManager.Remove(CallbackType.UPDATE, UpdateMe);
 			UpdateManager.Add(CallbackType.UPDATE, IdleUpdate);
-			playAudioLoop = false;
+			AmbientAudio.Stop();
 		}
 
 		private void CheckCooked()
@@ -304,26 +301,6 @@ namespace Objects.Kitchen
 			return;
 		}
 
-		private void OnSyncPlayAudioLoop(bool oldState, bool newState)
-		{
-			if (newState)
-			{
-				StartCoroutine(DelayGrillRunningSFX());
-			}
-			else
-			{
-				AmbientAudio.Stop();
-			}
-		}
-
-		// We delay the running SFX so the starting SFX has time to play.
-		private IEnumerator DelayGrillRunningSFX()
-		{
-			yield return WaitFor.Seconds(0.25f);
-
-			// Check to make sure the state hasn't changed in the meantime.
-			if (playAudioLoop) AmbientAudio.Play();
-		}
 		public override void OnStartClient()
 		{
 			EnsureInit();

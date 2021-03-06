@@ -234,7 +234,7 @@ MonoBehaviour:
   syncInterval: 0.1
   startSFX:
     SetLoadSetting: 0
-    AssetAddress: Assets/Prefabs/Weapons/sizzle.prefab
+    AssetAddress: Assets/Prefabs/LoopedSounds/sizzleLooped.prefab
     AssetReference:
       m_AssetGUID: 
       m_SubObjectName: 
