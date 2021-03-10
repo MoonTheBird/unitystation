@@ -14,6 +14,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   meatSteakPrefab: {fileID: 3664851965229280547, guid: 7eeb39ee45a50e543ad74ff71631525c,
     type: 3}
+--- !u!114 &-2843281212664835975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2786145059108661523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85f61ef9334eff448b907d2bf379cb03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CookTime: 10
+  CookedProduct: {fileID: 3664851965229280547, guid: 7eeb39ee45a50e543ad74ff71631525c,
+    type: 3}
 --- !u!114 &2513557761079566364
 MonoBehaviour:
   m_ObjectHideFlags: 0
